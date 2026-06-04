@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard</title>
+
+    <link rel="stylesheet"
+    href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<div class="sidebar">
+    <h2>Resume Builder</h2>
+
+    <a href="/dashboard">Dashboard</a><br><br>
+
+    <a href="/builder">Create Resume</a><br><br>
+
+    <a href="/logout">Logout</a>
+</div>
+
+<div class="main">
+
+    <h1>Welcome {{ user.username }}</h1>
+
+    <h2>My Resumes</h2>
+
+    {% if resumes %}
+
+        {% for resume in resumes %}
+
+        <div class="card">
+
+            <h3>{{ resume.full_name }}</h3>
+
+            <p>{{ resume.email }}</p>
+
+            <p>{{ resume.phone }}</p>
+
+            <a href="/edit_resume/{{ resume.id }}">Edit</a>
+
+            |
+
+            <a href="/delete_resume/{{ resume.id }}">Delete</a>
+
+            |
+
+            <a href="/download_resume/{{ resume.id }}">Download PDF</a>
+
+        </div>
+
+        <br>
+
+        {% endfor %}
+
+    {% else %}
+
+        <p>No resumes found.</p>
+
+    {% endif %}
+
+</div>
+
+</body>
+</html>

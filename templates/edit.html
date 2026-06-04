@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Edit Resume</title>
+    <link rel="stylesheet"
+href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<h1>Edit Resume</h1>
+<a href="/edit_resume/{{ resume.id }}">Edit</a>
+
+<a href="/delete_resume/{{ resume.id }}">Delete</a>
+
+<form method="POST">
+
+    <input type="text" name="full_name" value="{{ resume.full_name }}"><br><br>
+
+    <input type="email" name="email" value="{{ resume.email }}"><br><br>
+
+    <input type="text" name="phone" value="{{ resume.phone }}"><br><br>
+
+    <textarea name="skills">{{ resume.skills }}</textarea><br><br>
+
+    <textarea name="education">{{ resume.education }}</textarea><br><br>
+
+    <textarea name="experience">{{ resume.experience }}</textarea><br><br>
+
+    <button type="submit">Update Resume</button>
+
+</form>
+
+</body>
+</html>

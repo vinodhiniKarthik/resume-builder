@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Register — ResumeForge</title>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg: #020c0e;
+      --panel: #051215;
+      --border: #0ff3;
+      --glow: #00ffe7;
+      --glow2: #00b4ff;
+      --accent: #ff2d78;
+      --warn: #ffbe00;
+      --text: #c8fff8;
+      --muted: #4a8a82;
+      --input-bg: #071a1e;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      background: var(--bg);
+      font-family: 'Share Tech Mono', monospace;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow-x: hidden;
+      position: relative;
+      padding: 24px 16px;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(0,255,231,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,255,231,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      animation: gridScroll 20s linear infinite;
+      pointer-events: none;
+    }
+
+    @keyframes gridScroll {
+      0% { transform: translateY(0); }
+      100% { transform: translateY(40px); }
+    }
+
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(
+        0deg, transparent, transparent 2px,
+        rgba(0,0,0,0.15) 2px, rgba(0,0,0,0.15) 4px
+      );
+      pointer-events: none;
+      z-index: 999;
+    }
+
+    .blob { position: fixed; border-radius: 50%; filter: blur(90px); opacity: 0.1; pointer-events: none; }
+    .blob-1 { width: 500px; height: 500px; background: var(--glow2); top: -150px; right: -100px; }
+    .blob-2 { width: 400px; height: 400px; background: var(--accent); bottom: -100px; left: -100px; }
+
+    .card {
+      position: relative;
+      width: 460px;
+      max-width: 100%;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 40px 40px 36px;
+      box-shadow:
+        0 0 0 1px rgba(0,255,231,0.04),
+        0 0 50px rgba(0,180,255,0.07),
+        inset 0 1px 0 rgba(0,255,231,0.07);
+      animation: fadeUp 0.6s cubic-bezier(0.16,1,0.3,1) both;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(28px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .card::before, .card::after {
+      content: ''; position: absolute;
+      width: 18px; height: 18px;
+      border-color: var(--glow2); border-style: solid;
+    }
+    .card::before { top: -1px; left: -1px; border-width: 2px 0 0 2px; }
+    .card::after  { bottom: -1px; right: -1px; border-width: 0 2px 2px 0; }
+
+    .logo {
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 900;
+      font-size: 1.4rem;
+      letter-spacing: 4px;
+      color: var(--glow2);
+      text-shadow: 0 0 20px rgba(0,180,255,0.6);
+      text-align: center;
+      margin-bottom: 5px;
+    }
+
+    .tagline {
+      text-align: center;
+      font-size: 0.65rem;
+      color: var(--muted);
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      margin-bottom: 28px;
+    }
+
+    .sys-line {
+      font-size: 0.65rem;
+      color: var(--muted);
+      margin-bottom: 22px;
+      padding: 8px 12px;
+      border-left: 2px solid var(--warn);
+      background: rgba(255,190,0,0.04);
+    }
+    .sys-line span { color: var(--warn); }
+
+    .progress-bar {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 28px;
+    }
+    .progress-bar div {
+      flex: 1;
+      height: 3px;
+      background: #0ff1;
+      border-radius: 2px;
+      position: relative;
+      overflow: hidden;
+    }
+    .progress-bar div.done::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--glow2);
+      box-shadow: 0 0 8px var(--glow2);
+    }
+    .progress-bar div.active::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--glow);
+      animation: fillBar 1.5s ease-in-out infinite alternate;
+    }
+    @keyframes fillBar { from { width: 40%; } to { width: 100%; } }
+
+    .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+    .field { margin-bottom: 18px; }
+
+    label {
+      display: block;
+      font-size: 0.62rem;
+      letter-spacing: 2px;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    input[type="email"],
+    input[type="password"],
+    input[type="text"] {
+      width: 100%;
+      background: var(--input-bg);
+      border: 1px solid #0ff2;
+      border-radius: 2px;
+      padding: 11px 14px;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.88rem;
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    input:focus {
+      border-color: var(--glow2);
+      box-shadow: 0 0 0 2px rgba(0,180,255,0.12), inset 0 0 10px rgba(0,180,255,0.03);
+    }
+    input.error-field { border-color: var(--accent) !important; }
+    input::placeholder { color: #2a5a54; }
+
+    .field-errors {
+      margin-top: 5px;
+      font-size: 0.62rem;
+      color: var(--accent);
+      letter-spacing: 1px;
+    }
+    .field-errors li { list-style: none; }
+    .field-errors li::before { content: '✗ '; }
+
+    .strength-row {
+      display: flex;
+      gap: 3px;
+      margin-top: 6px;
+    }
+    .strength-row span {
+      flex: 1;
+      height: 2px;
+      background: #0ff1;
+      border-radius: 2px;
+      transition: background 0.3s;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 13px;
+      background: transparent;
+      border: 1px solid var(--glow2);
+      border-radius: 2px;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 4px;
+      color: var(--glow2);
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      transition: color 0.3s;
+      margin-top: 6px;
+    }
+    .btn::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--glow2);
+      transform: translateX(-101%);
+      transition: transform 0.3s cubic-bezier(0.16,1,0.3,1);
+    }
+    .btn:hover { color: var(--bg); }
+    .btn:hover::before { transform: translateX(0); }
+    .btn span { position: relative; z-index: 1; }
+
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 22px 0 18px;
+      color: var(--muted);
+      font-size: 0.6rem;
+      letter-spacing: 2px;
+    }
+    .divider::before, .divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: #0ff1;
+    }
+
+    .link-row {
+      text-align: center;
+      font-size: 0.72rem;
+      color: var(--muted);
+    }
+    .link-row a {
+      color: var(--glow);
+      text-decoration: none;
+      border-bottom: 1px dashed #0ff3;
+      transition: color 0.2s;
+    }
+    .link-row a:hover { color: var(--glow); border-color: var(--glow); }
+
+    .flash {
+      background: rgba(255,45,120,0.08);
+      border: 1px solid rgba(255,45,120,0.3);
+      border-radius: 2px;
+      padding: 10px 14px;
+      font-size: 0.72rem;
+      color: var(--accent);
+      margin-bottom: 18px;
+    }
+    .flash::before { content: '⚠ '; }
+
+    .cursor {
+      display: inline-block;
+      width: 3px; height: 1.1em;
+      background: var(--glow2);
+      vertical-align: middle;
+      margin-left: 4px;
+      animation: blink 1s step-end infinite;
+    }
+    @keyframes blink { 50% { opacity: 0; } }
+  </style>
+</head>
+<body>
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+
+  <div class="card">
+    <div class="logo">RESUMEFORGE<span class="cursor"></span></div>
+    <div class="tagline">// initialize new user account</div>
+
+    <div class="sys-line">
+      <span>INIT:</span> Creating secure profile &nbsp;|&nbsp; <span>STEP:</span> 1 of 1
+    </div>
+
+    <div class="progress-bar">
+      <div class="done"></div>
+      <div class="active"></div>
+      <div></div>
+    </div>
+
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        {% for msg in messages %}
+          <div class="flash">{{ msg }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <form method="POST" action="{{ url_for('register') }}" novalidate>
+      {{ form.hidden_tag() }}
+
+      <div class="row-2">
+        <div class="field">
+          {{ form.username.label(text="// username") }}
+          {{ form.username(placeholder="handle_01") }}
+          {% if form.username.errors %}
+            <ul class="field-errors">{% for e in form.username.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+          {% endif %}
+        </div>
+        <div class="field">
+          {{ form.email.label(text="// email") }}
+          {{ form.email(placeholder="user@domain.com") }}
+          {% if form.email.errors %}
+            <ul class="field-errors">{% for e in form.email.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="field">
+        {{ form.password.label(text="// password (min 6 chars)") }}
+        {{ form.password(placeholder="••••••••••••", id="pw") }}
+        <div class="strength-row" id="strength">
+          <span></span><span></span><span></span><span></span>
+        </div>
+        {% if form.password.errors %}
+          <ul class="field-errors">{% for e in form.password.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+        {% endif %}
+      </div>
+
+      <div class="field">
+        {{ form.confirm.label(text="// confirm password") }}
+        {{ form.confirm(placeholder="••••••••••••") }}
+        {% if form.confirm.errors %}
+          <ul class="field-errors">{% for e in form.confirm.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+        {% endif %}
+      </div>
+
+      <button type="submit" class="btn"><span>CREATE ACCOUNT →</span></button>
+    </form>
+
+    <div class="divider">already registered?</div>
+    <div class="link-row">
+      <a href="{{ url_for('login') }}">authenticate here ›</a>
+    </div>
+  </div>
+
+  <script>
+    const pw = document.getElementById('pw');
+    const bars = document.querySelectorAll('#strength span');
+    const colors = ['#ff2d78', '#ffbe00', '#00b4ff', '#00ffe7'];
+
+    pw?.addEventListener('input', () => {
+      const v = pw.value;
+      let score = 0;
+      if (v.length >= 6) score++;
+      if (v.length >= 10) score++;
+      if (/[A-Z]/.test(v) && /[0-9]/.test(v)) score++;
+      if (/[^A-Za-z0-9]/.test(v)) score++;
+
+      bars.forEach((b, i) => {
+        b.style.background = i < score ? colors[score - 1] : 'rgba(0,255,231,0.1)';
+      });
+    });
+  </script>
+</body>
+</html>

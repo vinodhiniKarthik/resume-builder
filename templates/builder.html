@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Résumé Builder</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0f0e0d;
+    --paper: #faf8f5;
+    --cream: #f0ece4;
+    --accent: #b5451b;
+    --accent-light: #e8c5b8;
+    --muted: #8a8078;
+    --border: #ddd8cf;
+    --white: #ffffff;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Outfit', sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    min-height: 100vh;
+  }
+
+  /* ── Header ── */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 40px;
+    background: var(--ink);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  header .logo {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px;
+    font-weight: 300;
+    color: var(--paper);
+    letter-spacing: 0.08em;
+  }
+  header .logo span {
+    color: var(--accent-light);
+    font-style: italic;
+  }
+
+  .header-actions {
+    display: flex;
+    gap: 12px;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 9px 20px;
+    border-radius: 6px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    border: none;
+    transition: all 0.18s ease;
+  }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--paper);
+    border: 1px solid rgba(255,255,255,0.25);
+  }
+  .btn-ghost:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.5); }
+
+  .btn-accent {
+    background: var(--accent);
+    color: var(--white);
+  }
+  .btn-accent:hover { background: #9a3a18; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(181,69,27,0.35); }
+
+  /* ── Layout ── */
+  .workspace {
+    display: grid;
+    grid-template-columns: 420px 1fr;
+    min-height: calc(100vh - 57px);
+  }
+
+  /* ── Form Panel ── */
+  .form-panel {
+    background: var(--white);
+    border-right: 1px solid var(--border);
+    overflow-y: auto;
+    padding: 36px 32px;
+    animation: slideIn 0.4s ease;
+  }
+
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateX(-16px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+
+  .panel-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 28px;
+    font-weight: 300;
+    color: var(--ink);
+    margin-bottom: 6px;
+  }
+
+  .panel-subtitle {
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 32px;
+    font-weight: 300;
+  }
+
+  /* Section tabs */
+  .section-tabs {
+    display: flex;
+    gap: 0;
+    margin-bottom: 28px;
+    border-bottom: 2px solid var(--border);
+  }
+
+  .tab {
+    padding: 10px 16px;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    transition: all 0.18s;
+    white-space: nowrap;
+  }
+  .tab.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+  .tab:hover:not(.active) { color: var(--ink); }
+
+  /* Tab panels */
+  .tab-content { display: none; }
+  .tab-content.active { display: block; animation: fadeUp 0.2s ease; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Form fields */
+  .field { margin-bottom: 20px; }
+
+  .field label {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+
+  .field input,
+  .field textarea,
+  .field select {
+    width: 100%;
+    padding: 11px 14px;
+    background: var(--paper);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 14px;
+    color: var(--ink);
+    transition: border-color 0.18s, box-shadow 0.18s;
+    outline: none;
+    resize: vertical;
+  }
+
+  .field input:focus,
+  .field textarea:focus,
+  .field select:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(181,69,27,0.1);
+    background: var(--white);
+  }
+
+  .field textarea { min-height: 110px; line-height: 1.6; }
+
+  .field-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+
+  .field-hint {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 5px;
+    line-height: 1.5;
+  }
+
+  /* Divider */
+  .field-divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 24px 0 20px;
+    color: var(--muted);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .field-divider::before,
+  .field-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* Color picker row */
+  .color-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+  .color-swatch {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: transform 0.15s, border-color 0.15s;
+    flex-shrink: 0;
+  }
+  .color-swatch:hover { transform: scale(1.15); }
+  .color-swatch.active { border-color: var(--ink); transform: scale(1.15); }
+
+  /* ── Preview Panel ── */
+  .preview-panel {
+    background: var(--cream);
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow-y: auto;
+  }
+
+  .preview-toolbar {
+    width: 100%;
+    max-width: 680px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+  }
+
+  .preview-label {
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 500;
+  }
+
+  /* The actual resume */
+  .resume-sheet {
+    width: 100%;
+    max-width: 680px;
+    background: var(--white);
+    box-shadow: 0 4px 40px rgba(0,0,0,0.12), 0 1px 4px rgba(0,0,0,0.06);
+    border-radius: 3px;
+    padding: 56px 60px;
+    animation: sheetIn 0.5s ease 0.1s both;
+    position: relative;
+    overflow: hidden;
+  }
+
+  @keyframes sheetIn {
+    from { opacity: 0; transform: translateY(20px) scale(0.98); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  .resume-accent-bar {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 5px;
+    background: var(--resume-color, var(--accent));
+    transition: background 0.3s;
+  }
+
+  /* Resume typography */
+  .resume-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 44px;
+    font-weight: 300;
+    line-height: 1.1;
+    color: var(--ink);
+    margin-bottom: 4px;
+    min-height: 52px;
+    transition: all 0.2s;
+  }
+
+  .resume-title {
+    font-size: 13px;
+    font-weight: 400;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--resume-color, var(--accent));
+    margin-bottom: 18px;
+    min-height: 18px;
+    transition: color 0.3s;
+  }
+
+  .resume-contact {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    padding: 14px 0;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 28px;
+  }
+
+  .resume-contact-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .resume-contact-item .icon {
+    width: 14px;
+    height: 14px;
+    color: var(--resume-color, var(--accent));
+    flex-shrink: 0;
+  }
+
+  .resume-section {
+    margin-bottom: 26px;
+  }
+
+  .resume-section-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--resume-color, var(--accent));
+    margin-bottom: 10px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--accent-light);
+    transition: color 0.3s, border-color 0.3s;
+  }
+
+  .resume-section-body {
+    font-size: 13.5px;
+    line-height: 1.75;
+    color: #3a3530;
+    white-space: pre-wrap;
+    min-height: 24px;
+  }
+
+  .resume-placeholder {
+    color: #c5bfb7;
+    font-style: italic;
+  }
+
+  .skills-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    min-height: 30px;
+  }
+
+  .skill-tag {
+    padding: 4px 12px;
+    background: var(--cream);
+    border: 1px solid var(--accent-light);
+    border-radius: 20px;
+    font-size: 12px;
+    color: #5a5048;
+    font-weight: 500;
+    transition: background 0.2s;
+  }
+
+  .skill-tag-placeholder {
+    color: #c5bfb7;
+    font-style: italic;
+    font-size: 13px;
+  }
+
+  /* Empty state */
+  .empty-tag {
+    font-style: italic;
+    color: #c5bfb7;
+    font-size: 13px;
+  }
+
+  /* Print styles */
+  @media print {
+    header, .form-panel, .preview-toolbar { display: none !important; }
+    body { background: white; }
+    .workspace { display: block; }
+    .preview-panel { padding: 0; background: white; }
+    .resume-sheet { box-shadow: none; max-width: 100%; }
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<header>
+  <div class="logo">résumé<span>craft</span></div>
+  <div class="header-actions">
+    <button class="btn btn-ghost" onclick="window.print()">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+      Print / PDF
+    </button>
+    <button class="btn btn-accent" onclick="copyResume()">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+      Copy Text
+    </button>
+  </div>
+</header>
+
+<div class="workspace">
+
+  <!-- ── Form Panel ── -->
+  <div class="form-panel">
+    <p class="panel-title">Build your résumé</p>
+    <p class="panel-subtitle">Fill in the fields — the preview updates instantly.</p>
+
+    <div class="section-tabs">
+      <div class="tab active" data-tab="basics">Basics</div>
+      <div class="tab" data-tab="skills">Skills</div>
+      <div class="tab" data-tab="experience">Experience</div>
+      <div class="tab" data-tab="education">Education</div>
+      <div class="tab" data-tab="style">Style</div>
+    </div>
+
+    <!-- Basics -->
+    <div class="tab-content active" id="tab-basics">
+      <div class="field">
+        <label>Full Name</label>
+        <input type="text" id="f_name" placeholder="Ada Lovelace" oninput="update()">
+      </div>
+      <div class="field">
+        <label>Professional Title</label>
+        <input type="text" id="f_title" placeholder="Software Engineer · Product Designer" oninput="update()">
+        <p class="field-hint">Shown beneath your name as a tagline.</p>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Email</label>
+          <input type="email" id="f_email" placeholder="ada@example.com" oninput="update()">
+        </div>
+        <div class="field">
+          <label>Phone</label>
+          <input type="text" id="f_phone" placeholder="+1 555 000 0000" oninput="update()">
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Location</label>
+          <input type="text" id="f_location" placeholder="London, UK" oninput="update()">
+        </div>
+        <div class="field">
+          <label>Website / LinkedIn</label>
+          <input type="text" id="f_website" placeholder="linkedin.com/in/ada" oninput="update()">
+        </div>
+      </div>
+      <div class="field">
+        <label>Summary</label>
+        <textarea id="f_summary" placeholder="A brief paragraph about who you are and what you bring to the table." oninput="update()"></textarea>
+      </div>
+    </div>
+
+    <!-- Skills -->
+    <div class="tab-content" id="tab-skills">
+      <div class="field">
+        <label>Skills</label>
+        <textarea id="f_skills" placeholder="Python, TypeScript, React, Figma, SQL, Docker" oninput="update()" style="min-height:80px"></textarea>
+        <p class="field-hint">Separate with commas — each becomes a tag in the preview.</p>
+      </div>
+      <div class="field">
+        <label>Tools & Technologies</label>
+        <textarea id="f_tools" placeholder="VS Code, GitHub Actions, AWS, Notion, Slack" oninput="update()" style="min-height:80px"></textarea>
+        <p class="field-hint">Separate with commas.</p>
+      </div>
+      <div class="field">
+        <label>Languages</label>
+        <input type="text" id="f_languages" placeholder="English (Native), French (B2), Spanish (A2)" oninput="update()">
+      </div>
+    </div>
+
+    <!-- Experience -->
+    <div class="tab-content" id="tab-experience">
+      <div class="field">
+        <label>Work Experience</label>
+        <textarea id="f_experience" placeholder="Senior Engineer · Acme Corp · 2021–Present&#10;• Led migration to microservices, reducing latency by 40%&#10;• Mentored a team of 5 junior developers&#10;&#10;Engineer · StartupXYZ · 2018–2021&#10;• Built the core API from scratch using Node.js and PostgreSQL" oninput="update()"></textarea>
+        <p class="field-hint">Use line breaks to separate roles. Bullet points (•) work great.</p>
+      </div>
+      <div class="field">
+        <label>Projects</label>
+        <textarea id="f_projects" placeholder="OpenSource CLI Tool — github.com/ada/cli&#10;A command-line tool for automating deployments. 1.2k GitHub stars." oninput="update()"></textarea>
+      </div>
+    </div>
+
+    <!-- Education -->
+    <div class="tab-content" id="tab-education">
+      <div class="field">
+        <label>Education</label>
+        <textarea id="f_education" placeholder="B.Sc. Computer Science · University of Cambridge · 2014–2018&#10;First Class Honours. Thesis on distributed systems." oninput="update()"></textarea>
+      </div>
+      <div class="field">
+        <label>Certifications & Awards</label>
+        <textarea id="f_certs" placeholder="AWS Certified Solutions Architect · 2022&#10;Best Paper Award, ICML 2023" oninput="update()"></textarea>
+      </div>
+    </div>
+
+    <!-- Style -->
+    <div class="tab-content" id="tab-style">
+      <div class="field">
+        <label>Accent Colour</label>
+        <div class="color-row" id="colorSwatches">
+          <div class="color-swatch active" style="background:#b5451b" data-color="#b5451b" onclick="setColor(this)"></div>
+          <div class="color-swatch" style="background:#1b4fb5" data-color="#1b4fb5" onclick="setColor(this)"></div>
+          <div class="color-swatch" style="background:#1b8f5a" data-color="#1b8f5a" onclick="setColor(this)"></div>
+          <div class="color-swatch" style="background:#6b1bb5" data-color="#6b1bb5" onclick="setColor(this)"></div>
+          <div class="color-swatch" style="background:#0f0e0d" data-color="#0f0e0d" onclick="setColor(this)"></div>
+          <div class="color-swatch" style="background:#b59a1b" data-color="#b59a1b" onclick="setColor(this)"></div>
+        </div>
+        <p class="field-hint">Changes the bar, section headings, and skill tags.</p>
+      </div>
+      <div class="field">
+        <label>Show sections</label>
+        <div style="display:flex;flex-direction:column;gap:10px;margin-top:4px">
+          <label style="display:flex;align-items:center;gap:10px;text-transform:none;font-size:14px;letter-spacing:0;font-weight:400;color:var(--ink);cursor:pointer">
+            <input type="checkbox" id="show_summary" checked onchange="update()" style="width:auto;accent-color:var(--accent)"> Summary
+          </label>
+          <label style="display:flex;align-items:center;gap:10px;text-transform:none;font-size:14px;letter-spacing:0;font-weight:400;color:var(--ink);cursor:pointer">
+            <input type="checkbox" id="show_skills" checked onchange="update()" style="width:auto;accent-color:var(--accent)"> Skills
+          </label>
+          <label style="display:flex;align-items:center;gap:10px;text-transform:none;font-size:14px;letter-spacing:0;font-weight:400;color:var(--ink);cursor:pointer">
+            <input type="checkbox" id="show_experience" checked onchange="update()" style="width:auto;accent-color:var(--accent)"> Experience
+          </label>
+          <label style="display:flex;align-items:center;gap:10px;text-transform:none;font-size:14px;letter-spacing:0;font-weight:400;color:var(--ink);cursor:pointer">
+            <input type="checkbox" id="show_projects" checked onchange="update()" style="width:auto;accent-color:var(--accent)"> Projects
+          </label>
+          <label style="display:flex;align-items:center;gap:10px;text-transform:none;font-size:14px;letter-spacing:0;font-weight:400;color:var(--ink);cursor:pointer">
+            <input type="checkbox" id="show_education" checked onchange="update()" style="width:auto;accent-color:var(--accent)"> Education
+          </label>
+          <label style="display:flex;align-items:center;gap:10px;text-transform:none;font-size:14px;letter-spacing:0;font-weight:400;color:var(--ink);cursor:pointer">
+            <input type="checkbox" id="show_certs" checked onchange="update()" style="width:auto;accent-color:var(--accent)"> Certifications
+          </label>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Preview Panel ── -->
+  <div class="preview-panel">
+    <div class="preview-toolbar">
+      <span class="preview-label">Live Preview</span>
+      <span class="preview-label" id="charCount" style="color:var(--muted)"></span>
+    </div>
+
+    <div class="resume-sheet" id="resumeSheet">
+      <div class="resume-accent-bar" id="accentBar"></div>
+
+      <div class="resume-name" id="p_name">Your Name</div>
+      <div class="resume-title" id="p_title"></div>
+
+      <div class="resume-contact" id="p_contact">
+        <span class="resume-contact-item" id="ci_email" style="display:none">
+          <svg class="icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,12 2,6"/></svg>
+          <span id="p_email"></span>
+        </span>
+        <span class="resume-contact-item" id="ci_phone" style="display:none">
+          <svg class="icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 2.18h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.16 6.16l.94-.94a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+          <span id="p_phone"></span>
+        </span>
+        <span class="resume-contact-item" id="ci_location" style="display:none">
+          <svg class="icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          <span id="p_location"></span>
+        </span>
+        <span class="resume-contact-item" id="ci_website" style="display:none">
+          <svg class="icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+          <span id="p_website"></span>
+        </span>
+      </div>
+
+      <!-- Summary -->
+      <div class="resume-section" id="sec_summary">
+        <div class="resume-section-title">Summary</div>
+        <div class="resume-section-body" id="p_summary"><span class="resume-placeholder">A brief paragraph about who you are…</span></div>
+      </div>
+
+      <!-- Skills -->
+      <div class="resume-section" id="sec_skills">
+        <div class="resume-section-title">Skills</div>
+        <div class="skills-list" id="p_skills"><span class="skill-tag-placeholder">Your skills will appear as tags…</span></div>
+        <div id="p_tools" style="margin-top:8px"></div>
+        <div id="p_languages_wrap" style="margin-top:8px;display:none">
+          <span style="font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);font-weight:600">Languages — </span>
+          <span id="p_languages" style="font-size:13px;color:#3a3530"></span>
+        </div>
+      </div>
+
+      <!-- Experience -->
+      <div class="resume-section" id="sec_experience">
+        <div class="resume-section-title">Experience</div>
+        <div class="resume-section-body" id="p_experience"><span class="resume-placeholder">Your work history will appear here…</span></div>
+      </div>
+
+      <!-- Projects -->
+      <div class="resume-section" id="sec_projects">
+        <div class="resume-section-title">Projects</div>
+        <div class="resume-section-body" id="p_projects"><span class="resume-placeholder">Notable projects will appear here…</span></div>
+      </div>
+
+      <!-- Education -->
+      <div class="resume-section" id="sec_education">
+        <div class="resume-section-title">Education</div>
+        <div class="resume-section-body" id="p_education"><span class="resume-placeholder">Your educational background will appear here…</span></div>
+      </div>
+
+      <!-- Certs -->
+      <div class="resume-section" id="sec_certs">
+        <div class="resume-section-title">Certifications & Awards</div>
+        <div class="resume-section-body" id="p_certs"><span class="resume-placeholder">Certifications and awards will appear here…</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Tab switching
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      tab.classList.add('active');
+      document.getElementById('tab-' + tab.dataset.tab).classList.add('active');
+    });
+  });
+
+  // Color state
+  let currentColor = '#b5451b';
+
+  function setColor(el) {
+    document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('active'));
+    el.classList.add('active');
+    currentColor = el.dataset.color;
+    applyColor(currentColor);
+  }
+
+  function applyColor(c) {
+    const sheet = document.getElementById('resumeSheet');
+    sheet.style.setProperty('--resume-color', c);
+    // tint the accent light
+    document.getElementById('accentBar').style.background = c;
+    document.querySelectorAll('.resume-section-title').forEach(el => el.style.color = c);
+    document.querySelectorAll('.resume-title').forEach(el => el.style.color = c);
+  }
+
+  function setOrPlaceholder(id, val, placeholder) {
+    const el = document.getElementById(id);
+    if (val && val.trim()) {
+      el.innerHTML = escHtml(val);
+      el.style.color = '';
+    } else {
+      el.innerHTML = `<span class="resume-placeholder">${placeholder}</span>`;
+    }
+  }
+
+  function escHtml(str) {
+    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  function buildTags(raw, container, placeholder) {
+    const el = document.getElementById(container);
+    if (!raw || !raw.trim()) {
+      el.innerHTML = `<span class="skill-tag-placeholder">${placeholder}</span>`;
+      return;
+    }
+    const tags = raw.split(',').map(s => s.trim()).filter(Boolean);
+    el.innerHTML = tags.map(t => `<span class="skill-tag">${escHtml(t)}</span>`).join('');
+  }
+
+  function contactItem(ciId, pId, value) {
+    const ci = document.getElementById(ciId);
+    const p  = document.getElementById(pId);
+    if (value && value.trim()) {
+      p.textContent = value.trim();
+      ci.style.display = 'flex';
+    } else {
+      ci.style.display = 'none';
+    }
+  }
+
+  function toggleSection(secId, checkId) {
+    const show = document.getElementById(checkId).checked;
+    document.getElementById(secId).style.display = show ? '' : 'none';
+  }
+
+  function update() {
+    // Name
+    const name = document.getElementById('f_name').value.trim();
+    document.getElementById('p_name').textContent = name || 'Your Name';
+
+    // Title
+    const title = document.getElementById('f_title').value.trim();
+    document.getElementById('p_title').textContent = title;
+    document.getElementById('p_title').style.display = title ? '' : 'none';
+
+    // Contact
+    contactItem('ci_email',    'p_email',    document.getElementById('f_email').value);
+    contactItem('ci_phone',    'p_phone',    document.getElementById('f_phone').value);
+    contactItem('ci_location', 'p_location', document.getElementById('f_location').value);
+    contactItem('ci_website',  'p_website',  document.getElementById('f_website').value);
+
+    // Summary
+    setOrPlaceholder('p_summary', document.getElementById('f_summary').value, 'A brief paragraph about who you are…');
+
+    // Skills
+    buildTags(document.getElementById('f_skills').value, 'p_skills', 'Your skills will appear as tags…');
+    buildTags(document.getElementById('f_tools').value,  'p_tools',  '');
+
+    // Languages
+    const lang = document.getElementById('f_languages').value.trim();
+    document.getElementById('p_languages').textContent = lang;
+    document.getElementById('p_languages_wrap').style.display = lang ? '' : 'none';
+
+    // Experience
+    setOrPlaceholder('p_experience', document.getElementById('f_experience').value, 'Your work history will appear here…');
+
+    // Projects
+    setOrPlaceholder('p_projects', document.getElementById('f_projects').value, 'Notable projects will appear here…');
+
+    // Education
+    setOrPlaceholder('p_education', document.getElementById('f_education').value, 'Your educational background will appear here…');
+
+    // Certs
+    setOrPlaceholder('p_certs', document.getElementById('f_certs').value, 'Certifications and awards will appear here…');
+
+    // Toggles
+    toggleSection('sec_summary',    'show_summary');
+    toggleSection('sec_skills',     'show_skills');
+    toggleSection('sec_experience', 'show_experience');
+    toggleSection('sec_projects',   'show_projects');
+    toggleSection('sec_education',  'show_education');
+    toggleSection('sec_certs',      'show_certs');
+
+    // Char count
+    const total = [...document.querySelectorAll('.form-panel input, .form-panel textarea')]
+      .reduce((sum, el) => sum + el.value.length, 0);
+    document.getElementById('charCount').textContent = total > 0 ? `${total} characters` : '';
+
+    applyColor(currentColor);
+  }
+
+  function copyResume() {
+    const sheet = document.getElementById('resumeSheet');
+    const text = sheet.innerText;
+    navigator.clipboard.writeText(text).then(() => {
+      const btn = document.querySelector('.btn-accent');
+      const orig = btn.innerHTML;
+      btn.innerHTML = `<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 12 4 18"/></svg> Copied!`;
+      setTimeout(() => { btn.innerHTML = orig; }, 2000);
+    });
+  }
+
+  // Init
+  update();
+</script>
+</body>
+</html>

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<h2>Register</h2>
+<link rel="stylesheet"
+href="{{ url_for('static', filename='css/style.css') }}">
+
+<form method="POST">
+    {{ form.hidden_tag() }}
+
+    <p>
+        {{ form.username.label }}<br>
+        {{ form.username() }}
+    </p>
+
+    <p>
+        {{ form.email.label }}<br>
+        {{ form.email() }}
+    </p>
+
+    <p>
+        {{ form.password.label }}<br>
+        {{ form.password() }}
+    </p>
+
+    <p>
+        {{ form.confirm.label }}<br>
+        {{ form.confirm() }}
+    </p>
+
+    <p>
+        {{ form.submit() }}
+    </p>
+</form>
+
+{% for field, errors in form.errors.items() %}
+    {% for error in errors %}
+        <p style="color:red">{{ field }}: {{ error }}</p>
+    {% endfor %}
+{% endfor %}
+
+</body>
+</html>

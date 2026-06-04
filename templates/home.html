@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="stylesheet"
+href="{{ url_for('static', filename='css/style.css') }}">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ResumeAI — Build Resumes That Get Hired</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0a0f;
+      --surface: #13131a;
+      --surface2: #1c1c27;
+      --accent: #6ee7b7;
+      --accent2: #818cf8;
+      --text: #f0f0f5;
+      --muted: #8888a0;
+      --border: rgba(255,255,255,0.07);
+      --font-display: 'Syne', sans-serif;
+      --font-body: 'DM Sans', sans-serif;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-body);
+      font-size: 16px;
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* ── NOISE TEXTURE OVERLAY ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.4;
+    }
+
+    /* ── GLOW BLOBS ── */
+    .blob {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(100px);
+      pointer-events: none;
+      z-index: 0;
+    }
+    .blob-1 {
+      width: 600px; height: 600px;
+      background: rgba(110,231,183,0.06);
+      top: -200px; left: -100px;
+      animation: drift1 18s ease-in-out infinite alternate;
+    }
+    .blob-2 {
+      width: 500px; height: 500px;
+      background: rgba(129,140,248,0.07);
+      bottom: 0; right: -100px;
+      animation: drift2 22s ease-in-out infinite alternate;
+    }
+    @keyframes drift1 { to { transform: translate(60px, 80px); } }
+    @keyframes drift2 { to { transform: translate(-60px, -80px); } }
+
+    /* ── NAV ── */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1rem 5%;
+      background: rgba(10,10,15,0.75);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-brand {
+      font-family: var(--font-display);
+      font-size: 1.25rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--text);
+      text-decoration: none;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .nav-brand span {
+      color: var(--accent);
+    }
+
+    .nav-pill {
+      display: flex; align-items: center;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      padding: 4px;
+      gap: 4px;
+    }
+
+    .nav-pill a {
+      padding: 6px 18px;
+      border-radius: 100px;
+      text-decoration: none;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--muted);
+      transition: all 0.2s;
+    }
+    .nav-pill a:hover { color: var(--text); }
+    .nav-pill a.primary {
+      background: var(--accent);
+      color: #0a0a0f;
+      font-weight: 600;
+    }
+    .nav-pill a.primary:hover { opacity: 0.9; }
+
+    /* ── HERO ── */
+    .hero {
+      position: relative; z-index: 1;
+      min-height: 92vh;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      text-align: center;
+      padding: 6rem 5% 4rem;
+    }
+
+    .badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(110,231,183,0.1);
+      border: 1px solid rgba(110,231,183,0.2);
+      border-radius: 100px;
+      padding: 6px 14px;
+      font-size: 0.78rem;
+      font-weight: 500;
+      color: var(--accent);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 2rem;
+      animation: fadeUp 0.6s ease both;
+    }
+    .badge-dot {
+      width: 6px; height: 6px;
+      background: var(--accent);
+      border-radius: 50%;
+      animation: pulse 2s ease infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.7); }
+    }
+
+    h1 {
+      font-family: var(--font-display);
+      font-size: clamp(2.8rem, 7vw, 5.5rem);
+      font-weight: 800;
+      line-height: 1.05;
+      letter-spacing: -0.03em;
+      max-width: 800px;
+      margin-bottom: 1.5rem;
+      animation: fadeUp 0.6s 0.1s ease both;
+    }
+    h1 em {
+      font-style: normal;
+      color: var(--accent);
+    }
+    h1 .purple { color: var(--accent2); }
+
+    .hero-sub {
+      font-size: 1.15rem;
+      color: var(--muted);
+      max-width: 520px;
+      font-weight: 300;
+      line-height: 1.7;
+      margin-bottom: 2.5rem;
+      animation: fadeUp 0.6s 0.2s ease both;
+    }
+
+    .cta-group {
+      display: flex; align-items: center; gap: 12px; flex-wrap: wrap; justify-content: center;
+      animation: fadeUp 0.6s 0.3s ease both;
+    }
+
+    .btn-primary-cta {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--accent);
+      color: #0a0a0f;
+      font-family: var(--font-body);
+      font-weight: 600;
+      font-size: 0.95rem;
+      padding: 13px 28px;
+      border-radius: 100px;
+      border: none;
+      text-decoration: none;
+      cursor: pointer;
+      transition: transform 0.15s, opacity 0.15s;
+    }
+    .btn-primary-cta:hover { transform: translateY(-2px); opacity: 0.9; }
+    .btn-primary-cta:active { transform: scale(0.98); }
+    .btn-primary-cta svg { width: 16px; height: 16px; }
+
+    .btn-ghost {
+      display: inline-flex; align-items: center; gap: 8px;
+      color: var(--muted);
+      font-size: 0.9rem;
+      font-weight: 400;
+      text-decoration: none;
+      padding: 13px 20px;
+      border-radius: 100px;
+      border: 1px solid var(--border);
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .btn-ghost:hover { color: var(--text); border-color: rgba(255,255,255,0.2); }
+
+    /* ── SOCIAL PROOF ── */
+    .social-proof {
+      margin-top: 3.5rem;
+      display: flex; align-items: center; gap: 1rem;
+      flex-wrap: wrap; justify-content: center;
+      animation: fadeUp 0.6s 0.4s ease both;
+    }
+    .avatars {
+      display: flex;
+    }
+    .avatars span {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      border: 2px solid var(--bg);
+      margin-left: -8px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .avatars span:first-child { margin-left: 0; }
+    .a1 { background: #6ee7b7; color: #0a0a0f; }
+    .a2 { background: #818cf8; color: #fff; }
+    .a3 { background: #fbbf24; color: #0a0a0f; }
+    .a4 { background: #f87171; color: #fff; }
+    .social-text { font-size: 0.82rem; color: var(--muted); }
+    .social-text strong { color: var(--text); }
+
+    /* ── RESUME PREVIEW CARD ── */
+    .preview-wrap {
+      position: relative; z-index: 1;
+      max-width: 700px;
+      margin: 4rem auto 0;
+      animation: fadeUp 0.8s 0.5s ease both;
+    }
+    .preview-label {
+      text-align: center;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+      margin-bottom: 1rem;
+    }
+    .resume-mock {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 40px 100px rgba(0,0,0,0.5);
+    }
+    .mock-topbar {
+      background: var(--surface2);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 16px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .mock-dot { width: 10px; height: 10px; border-radius: 50%; }
+    .d1 { background: #f87171; }
+    .d2 { background: #fbbf24; }
+    .d3 { background: #6ee7b7; }
+    .mock-tab {
+      margin-left: 12px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 4px 14px;
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+    .mock-body {
+      display: grid;
+      grid-template-columns: 1fr 2fr;
+    }
+    .mock-left {
+      background: #0f0f17;
+      padding: 1.5rem 1.25rem;
+      border-right: 1px solid var(--border);
+    }
+    .mock-avatar {
+      width: 56px; height: 56px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      margin-bottom: 0.75rem;
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-display);
+      font-weight: 800; font-size: 1.1rem;
+      color: #0a0a0f;
+    }
+    .mock-name { font-family: var(--font-display); font-size: 0.9rem; font-weight: 700; margin-bottom: 2px; }
+    .mock-role { font-size: 0.7rem; color: var(--accent); margin-bottom: 1rem; }
+    .mock-section-title {
+      font-size: 0.6rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+      margin-bottom: 0.5rem;
+      margin-top: 0.75rem;
+    }
+    .mock-skill {
+      background: rgba(110,231,183,0.1);
+      border: 1px solid rgba(110,231,183,0.15);
+      border-radius: 4px;
+      padding: 3px 8px;
+      font-size: 0.65rem;
+      color: var(--accent);
+      display: inline-block;
+      margin: 2px 2px 2px 0;
+    }
+    .mock-right { padding: 1.5rem; }
+    .mock-exp-title { font-family: var(--font-display); font-size: 0.82rem; font-weight: 700; }
+    .mock-exp-company { font-size: 0.7rem; color: var(--accent2); margin-bottom: 0.4rem; }
+    .mock-line {
+      height: 6px;
+      border-radius: 3px;
+      background: var(--surface2);
+      margin-bottom: 5px;
+    }
+    .mock-line.short { width: 60%; }
+    .mock-line.medium { width: 80%; }
+    .mock-line.full { width: 100%; }
+    .mock-divider { border: none; border-top: 1px solid var(--border); margin: 1rem 0; }
+    .ai-tag {
+      display: inline-flex; align-items: center; gap: 4px;
+      background: rgba(129,140,248,0.15);
+      border: 1px solid rgba(129,140,248,0.25);
+      border-radius: 4px;
+      padding: 3px 8px;
+      font-size: 0.65rem;
+      color: var(--accent2);
+      margin-bottom: 0.75rem;
+    }
+    .ai-tag-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--accent2); animation: pulse 1.5s ease infinite; }
+
+    /* ── FEATURES ── */
+    .features {
+      position: relative; z-index: 1;
+      padding: 6rem 5%;
+    }
+    .section-label {
+      text-align: center;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--accent);
+      margin-bottom: 1rem;
+    }
+    .section-title {
+      font-family: var(--font-display);
+      text-align: center;
+      font-size: clamp(1.8rem, 4vw, 2.8rem);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 1rem;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .section-sub {
+      text-align: center;
+      color: var(--muted);
+      font-size: 1rem;
+      max-width: 480px;
+      margin: 0 auto 3.5rem;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+    .feature-card {
+      background: var(--surface);
+      padding: 2rem;
+      transition: background 0.2s;
+    }
+    .feature-card:hover { background: var(--surface2); }
+    .feature-icon {
+      width: 40px; height: 40px;
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 1rem;
+      font-size: 1.1rem;
+    }
+    .fi-green { background: rgba(110,231,183,0.12); color: var(--accent); }
+    .fi-purple { background: rgba(129,140,248,0.12); color: var(--accent2); }
+    .fi-amber { background: rgba(251,191,36,0.12); color: #fbbf24; }
+    .fi-red { background: rgba(248,113,113,0.12); color: #f87171; }
+    .fi-cyan { background: rgba(34,211,238,0.12); color: #22d3ee; }
+    .fi-pink { background: rgba(244,114,182,0.12); color: #f472b6; }
+
+    .feature-title {
+      font-family: var(--font-display);
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+    .feature-desc { font-size: 0.875rem; color: var(--muted); line-height: 1.6; }
+
+    /* ── STEPS ── */
+    .steps {
+      position: relative; z-index: 1;
+      padding: 6rem 5%;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+    .steps-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 2rem;
+      max-width: 900px;
+      margin: 0 auto;
+      counter-reset: steps;
+    }
+    .step { text-align: center; }
+    .step-num {
+      width: 48px; height: 48px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 1rem;
+      font-family: var(--font-display);
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: var(--accent);
+    }
+    .step-title { font-family: var(--font-display); font-size: 1rem; font-weight: 700; margin-bottom: 0.4rem; }
+    .step-desc { font-size: 0.85rem; color: var(--muted); }
+
+    /* ── CTA SECTION ── */
+    .cta-section {
+      position: relative; z-index: 1;
+      padding: 7rem 5%;
+      text-align: center;
+    }
+    .cta-box {
+      max-width: 640px;
+      margin: 0 auto;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 4rem 3rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .cta-box::before {
+      content: '';
+      position: absolute;
+      top: -60px; left: 50%;
+      transform: translateX(-50%);
+      width: 300px; height: 300px;
+      background: radial-gradient(circle, rgba(110,231,183,0.12), transparent 70%);
+      pointer-events: none;
+    }
+    .cta-box h2 {
+      font-family: var(--font-display);
+      font-size: clamp(1.6rem, 4vw, 2.4rem);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 1rem;
+    }
+    .cta-box p { color: var(--muted); margin-bottom: 2rem; font-size: 0.95rem; }
+
+    /* ── FOOTER ── */
+    footer {
+      position: relative; z-index: 1;
+      border-top: 1px solid var(--border);
+      padding: 1.5rem 5%;
+      display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;
+    }
+    .footer-brand {
+      font-family: var(--font-display);
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--muted);
+    }
+    .footer-brand span { color: var(--accent); }
+    .footer-links { display: flex; gap: 1.5rem; }
+    .footer-links a { font-size: 0.8rem; color: var(--muted); text-decoration: none; }
+    .footer-links a:hover { color: var(--text); }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 600px) {
+      .mock-body { grid-template-columns: 1fr; }
+      .mock-left { border-right: none; border-bottom: 1px solid var(--border); }
+      .nav-pill a { padding: 6px 12px; font-size: 0.8rem; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="blob blob-1"></div>
+<div class="blob blob-2"></div>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-brand">Resume<span>AI</span></a>
+  <div class="nav-pill">
+    <a href="/login">Login</a>
+    <a href="/register" class="primary">Get started →</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="badge">
+    <div class="badge-dot"></div>
+    AI-Powered · ATS-Optimised
+  </div>
+
+  <h1>Resumes that get you <em>hired</em>,<br>not <span class="purple">ignored</span></h1>
+
+  <p class="hero-sub">
+    Our AI writes, formats, and tailors your resume for every job — in under 5 minutes. Beat the bots, impress the humans.
+  </p>
+
+  <div class="cta-group">
+    <a href="/register" class="btn-primary-cta">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M13 2L3 14h9l-1 8 10-12h-9z"/></svg>
+      Build my resume free
+    </a>
+    <a href="#how" class="btn-ghost">See how it works ↓</a>
+  </div>
+
+  <div class="social-proof">
+    <div class="avatars">
+      <span class="a1">AK</span>
+      <span class="a2">SR</span>
+      <span class="a3">PM</span>
+      <span class="a4">LN</span>
+    </div>
+    <p class="social-text"><strong>2,400+ professionals</strong> landed interviews this month</p>
+  </div>
+
+  <!-- RESUME PREVIEW MOCK -->
+  <div class="preview-wrap">
+    <p class="preview-label">AI-generated in 4 minutes ↓</p>
+    <div class="resume-mock">
+      <div class="mock-topbar">
+        <div class="mock-dot d1"></div>
+        <div class="mock-dot d2"></div>
+        <div class="mock-dot d3"></div>
+        <div class="mock-tab">my-resume.pdf</div>
+      </div>
+      <div class="mock-body">
+        <div class="mock-left">
+          <div class="mock-avatar">AK</div>
+          <div class="mock-name">Arjun Kumar</div>
+          <div class="mock-role">Software Engineer</div>
+          <div class="mock-section-title">Skills</div>
+          <span class="mock-skill">React</span>
+          <span class="mock-skill">Node.js</span>
+          <span class="mock-skill">Python</span>
+          <span class="mock-skill">AWS</span>
+          <span class="mock-skill">SQL</span>
+          <div class="mock-section-title">Education</div>
+          <div class="mock-line full"></div>
+          <div class="mock-line short"></div>
+          <div class="mock-section-title">Contact</div>
+          <div class="mock-line medium"></div>
+          <div class="mock-line medium"></div>
+        </div>
+        <div class="mock-right">
+          <div class="ai-tag"><div class="ai-tag-dot"></div>AI-enhanced bullet points</div>
+          <div class="mock-exp-title">Senior Frontend Developer</div>
+          <div class="mock-exp-company">TechCorp India · 2022 – Present</div>
+          <div class="mock-line full"></div>
+          <div class="mock-line medium"></div>
+          <div class="mock-line full"></div>
+          <div class="mock-line short"></div>
+          <hr class="mock-divider">
+          <div class="mock-exp-title">Full Stack Developer</div>
+          <div class="mock-exp-company">StartupXYZ · 2020 – 2022</div>
+          <div class="mock-line full"></div>
+          <div class="mock-line medium"></div>
+          <div class="mock-line full"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="features" id="features">
+  <p class="section-label">Why ResumeAI</p>
+  <h2 class="section-title">Everything you need to stand out</h2>
+  <p class="section-sub">Built for job seekers in India and beyond — from freshers to senior professionals.</p>
+
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="feature-icon fi-green">✦</div>
+      <div class="feature-title">AI Bullet Writer</div>
+      <p class="feature-desc">Describe your role in plain language — our AI rewrites it into impactful, metric-driven bullets.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon fi-purple">⟐</div>
+      <div class="feature-title">ATS Score Checker</div>
+      <p class="feature-desc">Instantly see how your resume scores against Applicant Tracking Systems before you apply.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon fi-amber">◈</div>
+      <div class="feature-title">Job-Tailored Versions</div>
+      <p class="feature-desc">Paste a job description and get a customised resume version in one click.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon fi-cyan">⬡</div>
+      <div class="feature-title">Professional Templates</div>
+      <p class="feature-desc">Clean, recruiter-approved layouts that work for every industry and experience level.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon fi-red">▲</div>
+      <div class="feature-title">One-Click PDF Export</div>
+      <p class="feature-desc">Download pixel-perfect PDFs ready to send — no formatting breaks, no surprises.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon fi-pink">❋</div>
+      <div class="feature-title">Cover Letter AI</div>
+      <p class="feature-desc">Auto-generate matching cover letters that sound human, not robotic.</p>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="steps" id="how">
+  <p class="section-label">How it works</p>
+  <h2 class="section-title">Three steps to your next interview</h2>
+  <p class="section-sub" style="margin-bottom:3rem;">No writing skills needed. No design experience required.</p>
+  <div class="steps-grid">
+    <div class="step">
+      <div class="step-num">01</div>
+      <div class="step-title">Enter your details</div>
+      <p class="step-desc">Fill in your experience, skills, and education. Our smart form guides you through it.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">02</div>
+      <div class="step-title">AI builds your resume</div>
+      <p class="step-desc">Our model writes strong bullet points and picks the best layout for your profile.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">03</div>
+      <div class="step-title">Download & apply</div>
+      <p class="step-desc">Export as PDF and start applying. Tweak for each job using the tailoring tool.</p>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <div class="cta-box">
+    <h2>Your next job is one resume away</h2>
+    <p>Join thousands of professionals who built their best resume with ResumeAI — it's free to start.</p>
+    <a href="/register" class="btn-primary-cta" style="display:inline-flex;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M13 2L3 14h9l-1 8 10-12h-9z"/></svg>
+      Create my resume — it's free
+    </a>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-brand">Resume<span>AI</span></div>
+  <div class="footer-links">
+    <a href="#">Privacy</a>
+    <a href="#">Terms</a>
+    <a href="#">Contact</a>
+  </div>
+</footer>
+
+</body>
+</html>

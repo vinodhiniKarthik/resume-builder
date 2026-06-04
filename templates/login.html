@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Login — ResumeForge</title>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg: #020c0e;
+      --panel: #051215;
+      --border: #0ff3;
+      --glow: #00ffe7;
+      --glow2: #00b4ff;
+      --accent: #ff2d78;
+      --text: #c8fff8;
+      --muted: #4a8a82;
+      --input-bg: #071a1e;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      background: var(--bg);
+      font-family: 'Share Tech Mono', monospace;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Animated grid background */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(0,255,231,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,255,231,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      animation: gridScroll 20s linear infinite;
+      pointer-events: none;
+    }
+
+    @keyframes gridScroll {
+      0% { transform: translateY(0); }
+      100% { transform: translateY(40px); }
+    }
+
+    /* Scanlines */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0,0,0,0.15) 2px,
+        rgba(0,0,0,0.15) 4px
+      );
+      pointer-events: none;
+      z-index: 999;
+    }
+
+    /* Corner glow blobs */
+    .blob {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0.12;
+      pointer-events: none;
+    }
+    .blob-1 { width: 400px; height: 400px; background: var(--glow); top: -100px; left: -100px; }
+    .blob-2 { width: 350px; height: 350px; background: var(--glow2); bottom: -80px; right: -80px; }
+    .blob-3 { width: 200px; height: 200px; background: var(--accent); top: 50%; left: 50%; transform: translate(-50%,-50%); opacity: 0.06; }
+
+    .card {
+      position: relative;
+      width: 420px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 44px 40px 40px;
+      box-shadow:
+        0 0 0 1px rgba(0,255,231,0.05),
+        0 0 40px rgba(0,255,231,0.07),
+        inset 0 1px 0 rgba(0,255,231,0.08);
+      animation: fadeUp 0.6s cubic-bezier(0.16,1,0.3,1) both;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Corner brackets */
+    .card::before, .card::after {
+      content: '';
+      position: absolute;
+      width: 16px; height: 16px;
+      border-color: var(--glow);
+      border-style: solid;
+    }
+    .card::before { top: -1px; left: -1px; border-width: 2px 0 0 2px; }
+    .card::after  { bottom: -1px; right: -1px; border-width: 0 2px 2px 0; }
+
+    .logo {
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 900;
+      font-size: 1.5rem;
+      letter-spacing: 4px;
+      color: var(--glow);
+      text-shadow: 0 0 20px rgba(0,255,231,0.6);
+      text-align: center;
+      margin-bottom: 6px;
+    }
+
+    .tagline {
+      text-align: center;
+      font-size: 0.7rem;
+      color: var(--muted);
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      margin-bottom: 32px;
+    }
+
+    .sys-line {
+      font-size: 0.65rem;
+      color: var(--muted);
+      margin-bottom: 24px;
+      padding: 8px 12px;
+      border-left: 2px solid var(--glow2);
+      background: rgba(0,180,255,0.04);
+    }
+    .sys-line span { color: var(--glow2); }
+
+    label {
+      display: block;
+      font-size: 0.65rem;
+      letter-spacing: 2px;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    .field { margin-bottom: 20px; }
+
+    input[type="email"],
+    input[type="password"],
+    input[type="text"] {
+      width: 100%;
+      background: var(--input-bg);
+      border: 1px solid #0ff2;
+      border-radius: 2px;
+      padding: 11px 14px;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.9rem;
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    input:focus {
+      border-color: var(--glow);
+      box-shadow: 0 0 0 2px rgba(0,255,231,0.1), inset 0 0 10px rgba(0,255,231,0.03);
+    }
+    input::placeholder { color: #2a5a54; }
+
+    .btn {
+      width: 100%;
+      padding: 13px;
+      background: transparent;
+      border: 1px solid var(--glow);
+      border-radius: 2px;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 4px;
+      color: var(--glow);
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      transition: color 0.3s;
+      margin-top: 8px;
+    }
+    .btn::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--glow);
+      transform: translateX(-101%);
+      transition: transform 0.3s cubic-bezier(0.16,1,0.3,1);
+    }
+    .btn:hover { color: var(--bg); }
+    .btn:hover::before { transform: translateX(0); }
+    .btn span { position: relative; z-index: 1; }
+
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 24px 0 20px;
+      color: var(--muted);
+      font-size: 0.6rem;
+      letter-spacing: 2px;
+    }
+    .divider::before, .divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: #0ff1;
+    }
+
+    .link-row {
+      text-align: center;
+      font-size: 0.72rem;
+      color: var(--muted);
+    }
+    .link-row a {
+      color: var(--glow2);
+      text-decoration: none;
+      border-bottom: 1px dashed #0ff3;
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .link-row a:hover { color: var(--glow); border-color: var(--glow); }
+
+    .flash {
+      background: rgba(255,45,120,0.08);
+      border: 1px solid rgba(255,45,120,0.3);
+      border-radius: 2px;
+      padding: 10px 14px;
+      font-size: 0.72rem;
+      color: var(--accent);
+      margin-bottom: 20px;
+      letter-spacing: 1px;
+    }
+    .flash::before { content: '⚠ '; }
+
+    /* Blinking cursor on logo */
+    .cursor {
+      display: inline-block;
+      width: 3px;
+      height: 1.2em;
+      background: var(--glow);
+      vertical-align: middle;
+      margin-left: 4px;
+      animation: blink 1s step-end infinite;
+    }
+    @keyframes blink { 50% { opacity: 0; } }
+  </style>
+</head>
+<body>
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+  <div class="blob blob-3"></div>
+
+  <div class="card">
+    <div class="logo">RESUMEFORGE<span class="cursor"></span></div>
+    <div class="tagline">// career engineering system</div>
+
+    <div class="sys-line">
+      <span>SYS:</span> Authentication required &nbsp;|&nbsp; <span>NODE:</span> secure-login-01
+    </div>
+
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        {% for msg in messages %}
+          <div class="flash">{{ msg }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <form method="POST" action="{{ url_for('login') }}" novalidate>
+      {{ form.hidden_tag() }}
+
+      <div class="field">
+        {{ form.email.label(text="// email address") }}
+        {{ form.email(placeholder="user@domain.com") }}
+      </div>
+
+      <div class="field">
+        {{ form.password.label(text="// password") }}
+        {{ form.password(placeholder="••••••••••••") }}
+      </div>
+
+      <button type="submit" class="btn"><span>AUTHENTICATE →</span></button>
+    </form>
+
+    <div class="divider">no account?</div>
+    <div class="link-row">
+      <a href="{{ url_for('register') }}">initialize new user ›</a>
+    </div>
+  </div>
+</body>
+</html>
